@@ -59,7 +59,8 @@ class GamesController < WebsocketRails::BaseController
     end
     host.save
     puts host.players
-    @usernames = data.collect{|d| game.joins[d["value"].to_i].user.name }
+    joins = game.joins.order("joins.seats")
+    @usernames = data.collect{|d| joins[d["value"].to_i].user.name }
     # puts usernames
     WebsocketRails[:updates].trigger(:players,@usernames)
   end

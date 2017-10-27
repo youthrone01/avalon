@@ -43,7 +43,8 @@ class UsersController < ApplicationController
 
   def host
   	host = Game.last.hosts.last.hoster
-  	@user = Game.last.users.all[host-1]
+  	join = Game.last.joins.find_by_seat(host)
+  	@user = join.user
   	# binding.pry
   	render json:@user
   end
