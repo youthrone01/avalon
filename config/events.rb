@@ -19,4 +19,5 @@ WebsocketRails::EventMap.describe do
   subscribe :vote, 'games#vote'
   subscribe :task, 'games#task'
   subscribe :new_message, 'games#post'
+  subscribe :newgame, 'games#newgame'
 end

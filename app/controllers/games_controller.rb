@@ -172,4 +172,9 @@ class GamesController < WebsocketRails::BaseController
     WebsocketRails[:messages].trigger('new_message',@message)
   end
 
+
+  def newgame
+    Game.create()
+    return WebsocketRails[:updates].trigger('newgame',true)
+  end
 end  

@@ -42,7 +42,7 @@
 </div>
 
 <script type="text/javascript">
-  var dispatcher = new WebSocketRails('localhost:3000/websocket');
+  var dispatcher = new WebSocketRails('192.168.0.237:3000/websocket');
   var limit = 2;
   var role = <%=session[:role]%>;
   var timer;
@@ -327,4 +327,13 @@
     dispatcher.trigger('new_message',data);
     $(this).children("textarea").val("");
   });
+
+  $('#newgame').click(function(){
+    dispatcher.trigger('newgame',"new")
+  })
+
+  channel.bind('newgame',function(res){
+      location.reload();
+  });
+
 </script>
