@@ -12,8 +12,11 @@ class ApplicationController < ActionController::Base
 	  	session[:role] = 4
 	  	session[:seat] = ""
   	end
-	
+  	if session[:role] == nil
+  		session[:role] = 1
+  	end
   end
+  
   def current_user
     User.find(session[:user_id]) if session[:user_id]
   end

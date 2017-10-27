@@ -1,30 +1,30 @@
 <h1>Games#show</h1>
 <p>Find me in app/views/games/show.html.erb</p>
-<a href="/game/<%=@game.id%>/quit" data-method="delete">Quit</a>
+<a href="/">Quit</a>
 <p>########################################</p>
-<div id="tasks"></div>
+<div id="tasks"><p>Tasks: </p></div>
 <div id="vote_res"></div>
 <div id="display"></div>
 <p>########################################</p>
 
 <div id="players">
   <% @users.each do |user| %>
-    <p id="<%=user.id%>"><%=user.name%></p>
+    <p id="<%=user.id%>" <%if user.joins.last.vote%>style='color:red'<%end%>><%=user.name%></p>
   <%end%>
 </div>
   
 
 <div id="button_div">
   <% if @users.include?(current_user) %>
-    <button id="ready">Ready</button>
+    <button class="btn btn-primary" id="ready" <%if current_user.joins.last.vote%>disabled<%end%>>Ready</button>
   <%else%>
-    <button id="join">Join</button>
+    <button class="btn btn-primary" id="join">Join</button>
   <%end%>
 </div>
   
 
 <script type="text/javascript">
-  var dispatcher = new WebSocketRails('192.168.1.2:3000/websocket');
+  var dispatcher = new WebSocketRails('localhost:3000/websocket');
   var limit = 2;
   var role = <%=session[:role]%>;
   var timer;
@@ -34,9 +34,11 @@
     // dispatcher.trigger('hello', 'Hello, there!');
   }
   $(document).on("click","#ready",function(){
-  	console.log("Click!")
-  	dispatcher.trigger('ready','Im ready')
-  })
+  	console.log("Click!");
+  	dispatcher.trigger('ready','Im ready');
+    $(this).attr("disabled","true");
+  });
+
   var channel = dispatcher.subscribe('updates'); 
   channel.bind('start',function(user){
   	console.log("let's Start!")
@@ -51,20 +53,42 @@
   			success:function(res){
   				console.log(res);
           role = res;
+          if(res){
+            $('#tasks').prepend("<p color='blue'>you are blue.</p>");
+          }
+          else{
+            $('#tasks').prepend("<p color='red'>you are red.</p>");
+          }
+
   			}
   	});
   });
 
-  channel.bind('update_player',function(user){
-    console.log(user.name);
-    if(!document.getElementById(user.id)){
-      console.log(user.name);
-      $("#players").append("<p id='"+user.id+"'>"+user.name+"</p>");
+  channel.bind('update_player',function(users){
+    var output = ""
+    for(var i=0;i<users.length;i++){
+      console.log(users[i].ready)
+      if(users[i].ready){
+        output += "<p id='"+users[i].id+"' style='color:red'>"+users[i].name+"</p>";
+      }
+      else{
+        output += "<p id='"+users[i].id+"'>"+users[i].name+"</p>";
+      }
+    }
+    $("#players").html(output);
+  })
+
+  channel.bind('ready',function(user){
+    if(document.getElementById(""+user.id)){
+      console.log(user.id + "is ready")
+      $("#"+user.id).attr("style","color:red")
     }
   })
+
   channel.bind('player_leave',function(user){
     $("#"+user.id).remove()
   })
+
   channel.bind('players',function(users){
   	// console.log(users);
   	var result = users.join(", ")
@@ -94,7 +118,6 @@
           taskVote();
         }
       }});
-        
     }
     else{
       $("#vote_res").html("<p>this host has not passed</p>")
@@ -118,9 +141,11 @@
   channel.bind('task_result',function(res){
     if(res){
       $("#display").html("<h2>Task Success</h2>")
+      $("#tasks p").append("Success/")
     }
     else{
       $("#display").html("<h2>Task Fail</h2>")
+      $("#tasks p").append("Fail/")
     }
     setTimeout(function(){
       askNewHost();
@@ -210,15 +235,14 @@
   }
 
   $("#display").on("change","input.box",function(e){
-  	if($(this).parent().children(':checked').length >= limit+1 ){
-  		this.checked = false;
+  	if($(this).parent().children(':checked').length==limit ){
   		$('#confirm').prop('disabled', false);
   	}
+    else if($(this).parent().children(':checked').length>limit ){
+      this.checked = false;
+    }
   	else{
   		$('#confirm').prop('disabled', true);
-  		// if($(this).siblings(':checked').length == limit-1){
-  		// 	$('#confirm').prop('disabled', false);
-  		// }
   	}
   });
   $("#display").on("click","#confirm",function(e){
@@ -247,7 +271,7 @@
         console.log(res);
         if(res){
           $("#join").remove();
-          $("#button_div").prepend("<button id='ready'>Ready</button>");
+          $("#button_div").prepend("<button class='btn btn-primary' id='ready'>Ready</button>");
         }
       }
     });
@@ -265,6 +289,12 @@
     dispatcher.trigger('task',false);
     $(this).parent().remove();
   });
+
+  window.onbeforeunload = function(){
+   dispatcher.trigger('client_disconnected',"closing!")
+  }
+
+
 
 
 </script>

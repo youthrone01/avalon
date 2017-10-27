@@ -1,22 +1,18 @@
 class GamesController < WebsocketRails::BaseController  
-    def join
-        game = Game.last
-        @user = User.find(session[:user_id])
-        puts 'Hey!'
-        if game.users.include?(@user)
-          puts "Hi!"
-	        WebsocketRails[:updates].trigger(:update_player, @user)
-        end
-      end
-    
-      def goodbye
-        join = Game.last.joins.find_by(user_id:session[:user_id])
-        if join
-        	@user = join.user
-        	join.destroy
-	        WebsocketRails[:updates].trigger(:player_leave, @user)
-        end
-      end
+  def join
+    game = Game.last
+    @users = game.users.includes(:joins).select("users.*,joins.vote AS ready").references(:joins)
+    WebsocketRails[:updates].trigger(:update_player, @users)
+  end
+  
+  def goodbye
+    join = Game.last.joins.find_by(user_id:session[:user_id])
+    if join and Game.last.status == nil
+    	@user = join.user
+    	join.destroy
+      WebsocketRails[:updates].trigger(:player_leave, @user)
+    end
+  end
 
   def ready
     # game = current_user.games.last
@@ -27,10 +23,10 @@ class GamesController < WebsocketRails::BaseController
     join.vote = true
     join.save
     game = join.game
-    puts game.joins.where(vote:true).size
-    if game.joins.where(vote:true).count == 2
+    if game.joins.where(vote:true).count == 6
+      game.update(status:"on")
       puts "we all ready!"
-      roles = [0,1]
+      roles = [0,1,1,1,1,0]
       roles = roles.shuffle
       joins = game.joins
       joins.each do |join|
@@ -38,24 +34,29 @@ class GamesController < WebsocketRails::BaseController
         join.vote = nil
         join.save
       end
-      hoster = Random.rand(1..2)
+      hoster = Random.rand(1..6)
       game.hosts.create(hoster:hoster,vote:"",players:"")
       @user = game.users.find(hoster)
       puts @user
       WebsocketRails[:updates].trigger(:start, @user)
     end
+    # binding.pry
+    @user = User.find_by_id(session[:user_id])
+    puts @user
+    WebsocketRails[:updates].trigger(:ready, @user)
   end
 
   def pick_players
     game = Game.last
     host = game.hosts.last
     # user_ids = data.collect{|d| d["value"]}
+    binding.pry
     data.each do |d|
       host.players += d['value']+","
     end
     host.save
     puts host.players
-    @usernames = data.collect{|d| game.users.find(d["value"].to_i).name }
+    @usernames = data.collect{|d| game.users[d["value"].to_i-1].name }
     # puts usernames
     WebsocketRails[:updates].trigger(:players,@usernames)
   end
@@ -79,7 +80,7 @@ class GamesController < WebsocketRails::BaseController
       join.vote = message
       join.save
     end
-    if host.vote.length >= 2
+    if host.vote.length >= 6
       host.vote = ''
       game.joins.each do |join|
         if join.vote
