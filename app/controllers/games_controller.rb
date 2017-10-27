@@ -1,7 +1,7 @@
 class GamesController < WebsocketRails::BaseController  
   def join
     game = Game.last
-    @joins = game.joins.joins(:user).select("users.name as name,joins.*")
+    @joins = game.joins.joins(:user).select("users.name as name,joins.*").order("joins.id")
     WebsocketRails[:updates].trigger(:update_player, @joins)
   end
   
@@ -42,7 +42,7 @@ class GamesController < WebsocketRails::BaseController
       puts @user
       WebsocketRails[:updates].trigger(:start, @user)
     end
-    @joins = game.joins.joins(:user).select("users.name as name,joins.*")
+    @joins = game.joins.joins(:user).select("users.name as name,joins.*").order("joins.id")
     WebsocketRails[:updates].trigger(:update_player, @joins)
   end
 
@@ -67,6 +67,9 @@ class GamesController < WebsocketRails::BaseController
     game = Game.last
     puts message
     host = game.hosts.last
+    unless game.users.include?(user)
+      return
+    end
     # binding.pry
     if message
       host.vote += "1"
@@ -160,6 +163,13 @@ class GamesController < WebsocketRails::BaseController
       end
 
     end
+  end
+
+  def post
+    puts data
+    Message.create(user_id:session[:user_id],content:data)
+    @message = Message.joins(:user).select("users.name as username,messages.*").where(user_id:session[:user_id]).last
+    WebsocketRails[:messages].trigger('new_message',@message)
   end
 
 end  

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171027013826) do
+ActiveRecord::Schema.define(version: 20171027085522) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,6 +46,15 @@ ActiveRecord::Schema.define(version: 20171027013826) do
   add_index "joins", ["game_id"], name: "index_joins_on_game_id", using: :btree
   add_index "joins", ["user_id"], name: "index_joins_on_user_id", using: :btree
 
+  create_table "messages", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "messages", ["user_id"], name: "index_messages_on_user_id", using: :btree
+
   create_table "tasks", force: :cascade do |t|
     t.integer  "game_id"
     t.string   "result"
@@ -67,5 +76,6 @@ ActiveRecord::Schema.define(version: 20171027013826) do
   add_foreign_key "hosts", "games"
   add_foreign_key "joins", "games"
   add_foreign_key "joins", "users"
+  add_foreign_key "messages", "users"
   add_foreign_key "tasks", "games"
 end

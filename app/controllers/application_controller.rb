@@ -22,6 +22,7 @@ class ApplicationController < ActionController::Base
   			"Success"
   		end
   	end
+  	@messages = Message.joins(:user).select("users.name as username,messages.*").all.order("messages.created_at DESC")
   end
 
   def current_user

@@ -1,49 +1,60 @@
-<h1>Games#show</h1>
-<p>Find me in app/views/games/show.html.erb</p>
-<a href="/">Quit</a>
-<p>########################################</p>
-<div id="tasks"><p>Tasks:
-<%@tasks.each do |task|%>
-  <%=task%>
-<%end%>
- </p></div>
-<div id="vote_res"></div>
-<div id="display"></div>
-<p>########################################</p>
-
-<div id="players">
-  <% @users.each do |user| %>
-    <p id="<%=user.id%>" <%if user.joins.last.vote%>style='color:red'<%end%>><%=user.name%></p>
-  <%end%>
+<div class="col-sm-6 col-md-8">
+  <h1>Avalon Room!</h1>
+  <p>########################################</p>
+  <div id="tasks">
+    <p>
+      Tasks:
+      <%@tasks.each do |task|%>
+        <%=task%>
+      <%end%>
+    </p>
+  </div>
+  <div id="vote_res"></div>
+  <div id="display"></div>
+  <p>########################################</p>
+  <div id="players">
+    <% @users.each do |user| %>
+      <p id="<%=user.id%>" <%if user.joins.last.vote%>style='color:red'<%end%>><%=user.name%></p>
+    <%end%>
+  </div>
+  <div id="button_div">
+    <% if @users.include?(current_user) %>
+      <button class="btn btn-primary" id="ready" <%if current_user.joins.last.vote%>disabled<%end%>>Ready</button>
+    <%else%>
+      <button class="btn btn-primary" id="join">Join</button>
+    <%end%>
+  </div>
 </div>
-  
 
-<div id="button_div">
-  <% if @users.include?(current_user) %>
-    <button class="btn btn-primary" id="ready" <%if current_user.joins.last.vote%>disabled<%end%>>Ready</button>
-  <%else%>
-    <button class="btn btn-primary" id="join">Join</button>
-  <%end%>
+<div id="message_area" class="col-sm-6 col-md-4">
+  <div id="messages" style="overflow: scroll;height: 400px">
+    <%@messages.each do |message|%>
+      <p id="message<%=message.id%>" class="message"><%=message.username%> says: <%=message.content%> (<%=message.created_at%>)</p>
+      <p>*************************</p>
+    <%end%>
+  </div>
+  <form id="message_post" class="text-right">
+    <label>Post Message:</label>
+    <textarea id="post_area" class="form-control" rows="5"></textarea><br>
+    <input type="submit" class="btn btn-primary" value="Post">
+  </form>
 </div>
-  
 
 <script type="text/javascript">
-  var dispatcher = new WebSocketRails('192.168.0.237:3000/websocket');
+  var dispatcher = new WebSocketRails('localhost:3000/websocket');
   var limit = 2;
   var role = <%=session[:role]%>;
   var timer;
   var form_id;
+
   dispatcher.on_open = function(data) {
     console.log('Connection has been established: ', data);
     // dispatcher.trigger('hello', 'Hello, there!');
   }
-  $(document).on("click","#ready",function(){
-  	console.log("Click!");
-  	dispatcher.trigger('ready','Im ready');
-    $(this).attr("disabled","true");
-  });
 
-  var channel = dispatcher.subscribe('updates'); 
+  var channel = dispatcher.subscribe('updates');
+  var message_channel = dispatcher.subscribe('messages');
+
   channel.bind('start',function(user){
   	console.log("let's Start!")
   	if(user.id == <%=session[:user_id]%>){
@@ -159,7 +170,15 @@
       $("#display").html("<h2>Game Over, Red Win!</h2>")
     }
   });
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  message_channel.bind('new_message',function(res){
+    console.log("receive result: "+res);
+    $("#messages").prepend("<p>*************************</p>");
+    $("#messages").prepend("<p id='message"+res.id+"'>"+res.username +" says: "+res.content+" ("+res.created_at+")</p>");
+  });
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
   function askNewHost(){
     $.ajax({url:"/users/host",success:function(user){
       if(user.id==<%=session[:user_id]%>){
@@ -242,6 +261,14 @@
   		$('#confirm').prop('disabled', true);
   	}
   });
+// //////////////////////////////////////////////////////////////////////////////
+
+  $(document).on("click","#ready",function(){
+    console.log("Click!");
+    dispatcher.trigger('ready','Im ready');
+    $(this).attr("disabled","true");
+  });
+
   $("#display").on("click","#confirm",function(e){
   	e.preventDefault();
   	var data = $(this).parent().serializeArray();
@@ -292,6 +319,11 @@
   }
 
 
-
-
+  $("#message_post").submit(function(e){
+    e.preventDefault();
+    var data = $(this).children("textarea").val();
+    console.log(data);
+    dispatcher.trigger('new_message',data);
+    $(this).children("textarea").val("");
+  });
 </script>
