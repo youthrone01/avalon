@@ -35,7 +35,7 @@ class GamesController < WebsocketRails::BaseController
         join.vote = nil
         join.save
       end
-      binding.pry
+      # binding.pry
       hoster = Random.rand(1..6)
       game.hosts.create(hoster:hoster,vote:"",players:"")
       @user = game.users[hoster-1]
@@ -50,7 +50,7 @@ class GamesController < WebsocketRails::BaseController
     game = Game.last
     host = game.hosts.last
     # user_ids = data.collect{|d| d["value"]}
-    binding.pry
+    # binding.pry
     data.each do |d|
       host.players += d['value']+","
     end

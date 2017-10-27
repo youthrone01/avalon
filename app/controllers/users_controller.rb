@@ -44,7 +44,7 @@ class UsersController < ApplicationController
   end
 
   def limit
-  	list = [2,2,2,2,2]
+  	list = [2,3,4,3,4]
 	a = Game.last.tasks.size%5
 	render json: list[a]
   end

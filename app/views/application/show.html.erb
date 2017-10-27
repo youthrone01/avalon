@@ -82,13 +82,6 @@
     $("#players").html(output);
   })
 
-  // channel.bind('ready',function(joins){
-  //   if(document.getElementById(""+user.id)){
-  //     console.log(user.id + "is ready")
-  //     $("#"+user.id).attr("style","color:red")
-  //   }
-  // })
-
   channel.bind('player_leave',function(user){
     $("#"+user.id).remove()
   })
