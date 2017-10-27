@@ -1,3 +1,270 @@
-<h1 id="count">0</h1>
-<h1>people are watching</h1>
-<h1><a href="https://github.com/parkeristyping/whoswatching">Github</a></h1>
+<h1>Games#show</h1>
+<p>Find me in app/views/games/show.html.erb</p>
+<a href="/game/<%=@game.id%>/quit" data-method="delete">Quit</a>
+<p>########################################</p>
+<div id="tasks"></div>
+<div id="vote_res"></div>
+<div id="display"></div>
+<p>########################################</p>
+
+<div id="players">
+  <% @users.each do |user| %>
+    <p id="<%=user.id%>"><%=user.name%></p>
+  <%end%>
+</div>
+  
+
+<div id="button_div">
+  <% if @users.include?(current_user) %>
+    <button id="ready">Ready</button>
+  <%else%>
+    <button id="join">Join</button>
+  <%end%>
+</div>
+  
+
+<script type="text/javascript">
+  var dispatcher = new WebSocketRails('192.168.1.2:3000/websocket');
+  var limit = 2;
+  var role = <%=session[:role]%>;
+  var timer;
+  var form_id;
+  dispatcher.on_open = function(data) {
+    console.log('Connection has been established: ', data);
+    // dispatcher.trigger('hello', 'Hello, there!');
+  }
+  $(document).on("click","#ready",function(){
+  	console.log("Click!")
+  	dispatcher.trigger('ready','Im ready')
+  })
+  var channel = dispatcher.subscribe('updates'); 
+  channel.bind('start',function(user){
+  	console.log("let's Start!")
+  	if(user.id == <%=session[:user_id]%>){
+  		$('#display').text("You are the first hoster")
+  		hostForm(6)
+  	}
+  	else{
+	  	$('#display').text( user.name+" is the first hoster")
+  	}
+  	$.ajax({url:"/users/role",
+  			success:function(res){
+  				console.log(res);
+          role = res;
+  			}
+  	});
+  });
+
+  channel.bind('update_player',function(user){
+    console.log(user.name);
+    if(!document.getElementById(user.id)){
+      console.log(user.name);
+      $("#players").append("<p id='"+user.id+"'>"+user.name+"</p>");
+    }
+  })
+  channel.bind('player_leave',function(user){
+    $("#"+user.id).remove()
+  })
+  channel.bind('players',function(users){
+  	// console.log(users);
+  	var result = users.join(", ")
+  	result += " have been picked to take the task"
+  	$('#display').html("<p>"+result+"</p>")
+  	voteForm()
+  });
+
+  channel.bind('vote_result',function(host){
+    if(host.result){
+      $("#vote_res").html("<p>this host has passed, task begin</p>")
+      for(var i=1;i<=host.vote.length;i++){
+        if(host.vote[i-1]==1){
+          $("#vote_res").append("<p>Player "+i+": Agree</p>");
+        }
+        else if(host.vote[i-1]==2){
+          $("#vote_res").append("<p>Player "+i+": Nil</p>")
+        }
+        else{
+          $("#vote_res").append("<p>Player "+i+": Disagree</p>")
+        }
+      }
+      $.ajax({url:"/users/seat",success:function(seat){
+        console.log("this is my seat: "+typeof(seat));
+        console.log(host.players.split(",").includes(seat))
+        if(host.players.split(",").includes(seat+"")){
+          taskVote();
+        }
+      }});
+        
+    }
+    else{
+      $("#vote_res").html("<p>this host has not passed</p>")
+      for(var i=1;i<=host.vote.length;i++){
+        if(host.vote[i-1]==1){
+          $("#vote_res").append("<p>Player "+i+": Agree</p>");
+        }
+        else if(host.vote[i-1]==2){
+          $("#vote_res").append("<p>Player "+i+": Nil</p>")
+        }
+        else{
+          $("#vote_res").append("<p>Player "+i+": Disagree</p>")
+        }
+      }
+      setTimeout(function(){
+        askNewHost();
+      },5000);
+    }
+  });
+
+  channel.bind('task_result',function(res){
+    if(res){
+      $("#display").html("<h2>Task Success</h2>")
+    }
+    else{
+      $("#display").html("<h2>Task Fail</h2>")
+    }
+    setTimeout(function(){
+      askNewHost();
+    },5000);
+    console.log("this is "+typeof(res));
+  });
+
+  channel.bind('game_over',function(res){
+    console.log(res)
+    if(res){
+      $("#display").html("<h2>Game Over, Blue Win!</h2>")
+    }
+    else{
+      $("#display").html("<h2>Game Over, Red Win!</h2>")
+    }
+  });
+
+  function askNewHost(){
+    $.ajax({url:"/users/host",success:function(user){
+      if(user.id==<%=session[:user_id]%>){
+        $("#display").html("<h2>You are host, Please pick palyers taking task.</h2>");
+        hostForm(6);
+      }
+      else{
+        $("#display").html("<h2>"+user.name+" is host, please wait.</h2>");
+      }
+    }})
+  }
+
+  function hostForm(m){
+    $.ajax({url:"/users/limit",success:function(res){
+      limit = res;
+    	var form = "<form id='pick'>"
+    	for(var i=1;i<m+1;i++){
+    		form += "<input class='box' type='checkbox' name='"+i+"' value="+i+"><br>";
+    	}
+    	form += "<button id='confirm' disabled>Pick Players</button></form>"
+    	$("#display").append(form)
+    }});
+  }
+
+  function voteForm(){
+    $.ajax({url:"/users/limit",success:function(res){
+      form_id = limit;
+    	var vote = "<div id='vote"+form_id+"'><h2>Do you agree with this?</h2><p id='time'>10s</p>"
+    	vote += "<button id = 'agree'>Agree</button>"
+    	vote += "<button id = 'disagree'>Disagree</button></div>"
+    	$("#display").append(vote)
+    	setTimer("vote"+form_id)
+    }});
+  }
+
+  function setTimer(elem){
+    var t = 10;
+    console.log("this is "+elem);
+    timer = setInterval(function(){
+      t--;
+      if(document.getElementById(elem)){
+        $("#time").text(t+"s");
+      }
+    },1000);
+    setTimeout(function(){
+      clearInterval(timer)
+      if(document.getElementById(elem)){
+        dispatcher.trigger(elem.slice(0,4),null)
+        $("#"+elem).remove();
+      }
+    },10500);
+  }
+
+  function taskVote(){
+    $.ajax({url:"/users/limit",success:function(res){
+      form_id = limit;
+      var vote = "<div id='task"+form_id+"'><h3>Do you want this task pass?</h3><br><h4 id='time'>10s</h4>";
+      vote += "<button id='success'>Success</button><br>";
+      
+      if (!role){
+        vote += "<button id='fail'>Fail</button>";
+      }
+      else{
+        vote += "<button id='fail' disabled>Fail</button>";
+      }
+      vote += "</div>"
+      $("#display").append(vote);
+      setTimer("task"+form_id);
+    }});
+  }
+
+  $("#display").on("change","input.box",function(e){
+  	if($(this).parent().children(':checked').length >= limit+1 ){
+  		this.checked = false;
+  		$('#confirm').prop('disabled', false);
+  	}
+  	else{
+  		$('#confirm').prop('disabled', true);
+  		// if($(this).siblings(':checked').length == limit-1){
+  		// 	$('#confirm').prop('disabled', false);
+  		// }
+  	}
+  });
+  $("#display").on("click","#confirm",function(e){
+  	e.preventDefault();
+  	var data = $(this).parent().serializeArray();
+  	console.log(typeof(data));
+  	$(this).parent().remove();
+  	dispatcher.trigger('pick_players',data)
+  })
+
+  $("#display").on("click","#agree",function(e){
+  	dispatcher.trigger('vote',true);
+  	$(this).parent().remove();
+  });
+
+  $("#display").on("click","#disagree",function(e){
+  	dispatcher.trigger('vote',false);
+  	$(this).parent().remove();
+  });
+
+
+  $("#button_div").on("click","#join",function(e){
+    $.ajax({
+      url: "/users/join",
+      success:function(res){
+        console.log(res);
+        if(res){
+          $("#join").remove();
+          $("#button_div").prepend("<button id='ready'>Ready</button>");
+        }
+      }
+    });
+    setTimeout(function(){
+      dispatcher.trigger("join","I want join")
+    },500);
+  });
+
+  $("#display").on("click","button#success",function(e){
+    dispatcher.trigger('task',true);
+    $(this).parent().remove();
+  });
+
+  $("#display").on("click","button#fail",function(e){
+    dispatcher.trigger('task',false);
+    $(this).parent().remove();
+  });
+
+
+</script>

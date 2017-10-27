@@ -16,15 +16,15 @@
 //= require websocket_rails/main
 //= require_tree .
 
-$(document).ready(function(){
-    var dispatcher = new WebSocketRails('localhost:3000/websocket');
-    dispatcher.on_open = function(data) {
-        console.log('Connection has been established: ', data);
-        dispatcher.trigger('hello', 'Hello, there!');
-    }
+// $(document).ready(function(){
+//     var dispatcher = new WebSocketRails('localhost:3000/websocket');
+//     dispatcher.on_open = function(data) {
+//         console.log('Connection has been established: ', data);
+//         dispatcher.trigger('hello', 'Hello, there!');
+//     }
 
-    var channel = dispatcher.subscribe('updates');
-    channel.bind('update', function(count) {
-        $('#count').text(count);
-    });
-});
+//     var channel = dispatcher.subscribe('updates');
+//     channel.bind('update', function(count) {
+//         $('#count').text(count);
+//     });
+// });
