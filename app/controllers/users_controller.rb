@@ -15,7 +15,7 @@ class UsersController < ApplicationController
     @user = User.find(session[:user_id])
     if game.joins.size < 6 and !game.users.include?(@user)
     	game.joins.create(user_id:session[:user_id])
-    	session[:seat] = game.joins.size.to_s
+    	session[:seat] = game.joins.index(@user.joins.last)+1
   		return render json: true
     end
   	render json:false

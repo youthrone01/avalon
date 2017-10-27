@@ -68,26 +68,26 @@
   	});
   });
 
-  channel.bind('update_player',function(users){
+  channel.bind('update_player',function(joins){
     var output = ""
-    for(var i=0;i<users.length;i++){
-      console.log(users[i].ready)
-      if(users[i].ready){
-        output += "<p id='"+users[i].id+"' style='color:red'>"+users[i].name+"</p>";
+    for(var i=0;i<joins.length;i++){
+      console.log(joins[i].vote)
+      if(joins[i].vote){
+        output += "<p id='"+joins[i].user_id+"' style='color:red'>"+joins[i].name+"</p>";
       }
       else{
-        output += "<p id='"+users[i].id+"'>"+users[i].name+"</p>";
+        output += "<p id='"+joins[i].user_id+"'>"+joins[i].name+"</p>";
       }
     }
     $("#players").html(output);
   })
 
-  channel.bind('ready',function(user){
-    if(document.getElementById(""+user.id)){
-      console.log(user.id + "is ready")
-      $("#"+user.id).attr("style","color:red")
-    }
-  })
+  // channel.bind('ready',function(joins){
+  //   if(document.getElementById(""+user.id)){
+  //     console.log(user.id + "is ready")
+  //     $("#"+user.id).attr("style","color:red")
+  //   }
+  // })
 
   channel.bind('player_leave',function(user){
     $("#"+user.id).remove()
@@ -116,8 +116,8 @@
         }
       }
       $.ajax({url:"/users/seat",success:function(seat){
-        console.log("this is my seat: "+typeof(seat));
-        console.log(host.players.split(",").includes(seat))
+        console.log("this is my seat: "+seat);
+        console.log(host.players.split(",").includes(seat+""));
         if(host.players.split(",").includes(seat+"")){
           taskVote();
         }
@@ -252,7 +252,7 @@
   $("#display").on("click","#confirm",function(e){
   	e.preventDefault();
   	var data = $(this).parent().serializeArray();
-  	console.log(typeof(data));
+  	console.log(data);
   	$(this).parent().remove();
   	dispatcher.trigger('pick_players',data)
   })

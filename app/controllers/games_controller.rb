@@ -1,8 +1,8 @@
 class GamesController < WebsocketRails::BaseController  
   def join
     game = Game.last
-    @users = game.users.includes(:joins).select("users.*,joins.vote AS ready").references(:joins)
-    WebsocketRails[:updates].trigger(:update_player, @users)
+    @joins = game.joins.joins(:user).select("users.name as name,joins.*")
+    WebsocketRails[:updates].trigger(:update_player, @joins)
   end
   
   def goodbye
@@ -42,10 +42,8 @@ class GamesController < WebsocketRails::BaseController
       puts @user
       WebsocketRails[:updates].trigger(:start, @user)
     end
-    # binding.pry
-    @user = User.find_by_id(session[:user_id])
-    puts @user
-    WebsocketRails[:updates].trigger(:ready, @user)
+    @joins = game.joins.joins(:user).select("users.name as name,joins.*")
+    WebsocketRails[:updates].trigger(:update_player, @joins)
   end
 
   def pick_players
@@ -58,7 +56,7 @@ class GamesController < WebsocketRails::BaseController
     end
     host.save
     puts host.players
-    @usernames = data.collect{|d| game.users[d["value"].to_i-1].name }
+    @usernames = data.collect{|d| game.joins[d["value"].to_i-1].user.name }
     # puts usernames
     WebsocketRails[:updates].trigger(:players,@usernames)
   end
@@ -97,7 +95,7 @@ class GamesController < WebsocketRails::BaseController
       end
       puts host.vote
       
-      if host.hoster <=1
+      if host.hoster <= 5
         hoster = host.hoster+1
       else
         hoster = 1
