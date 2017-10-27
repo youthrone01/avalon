@@ -1,5 +1,7 @@
 class SessionsController < ApplicationController
   def index
+  	session[:user_id] = nil
+  	render 'show'
   end
 
   def create

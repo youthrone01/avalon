@@ -1,5 +1,5 @@
 <div class="col-sm-6 col-md-8">
-  <h1>Avalon Room!</h1>
+  <h1>Avaloooooon Room!</h1>
   <p>########################################</p>
   <div id="tasks">
     <p>
@@ -12,7 +12,8 @@
   <div id="vote_res"></div>
   <div id="display"></div>
   <p>########################################</p>
-  <div id="players">
+  <div id="host" style="display: inline-block;"></div>
+  <div id="players" style="display: inline-block;">
     <% @users.each do |user| %>
       <p id="<%=user.id%>" <%if user.joins.last.vote%>style='color:red'<%end%>><%=user.name%></p>
     <%end%>
@@ -29,7 +30,7 @@
 <div id="message_area" class="col-sm-6 col-md-4">
   <div id="messages" style="overflow: scroll;height: 400px">
     <%@messages.each do |message|%>
-      <p id="message<%=message.id%>" class="message"><%=message.username%> says: <%=message.content%> (<%=message.created_at%>)</p>
+      <p id="message<%=message.id%>" class="message"><%=message.username%> says:<br> <%=message.content%> (<%=message.created_at%>)</p>
       <p>*************************</p>
     <%end%>
   </div>
@@ -175,7 +176,7 @@
   message_channel.bind('new_message',function(res){
     console.log("receive result: "+res);
     $("#messages").prepend("<p>*************************</p>");
-    $("#messages").prepend("<p id='message"+res.id+"'>"+res.username +" says: "+res.content+" ("+res.created_at+")</p>");
+    $("#messages").prepend("<p id='message"+res.id+"'>"+res.username +" says:<br>"+res.content+" ("+res.created_at+")</p>");
   });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,14 +200,14 @@
     		form += "<input class='box' type='checkbox' name='"+i+"' value="+i+"><br>";
     	}
     	form += "<button id='confirm' disabled>Pick Players</button></form>"
-    	$("#display").append(form)
+    	$("#host").html(form)
     }});
   }
 
   function voteForm(){
     $.ajax({url:"/users/limit",success:function(res){
       form_id = limit;
-    	var vote = "<div id='vote"+form_id+"'><h2>Do you agree with this?</h2><p id='time'>10s</p>"
+    	var vote = "<div id='vote"+form_id+"'><h2>Do you agree with this?</h2><p id='time"+form_id+"'>10s</p>"
     	vote += "<button id = 'agree'>Agree</button>"
     	vote += "<button id = 'disagree'>Disagree</button></div>"
     	$("#display").append(vote)
@@ -220,11 +221,11 @@
     timer = setInterval(function(){
       t--;
       if(document.getElementById(elem)){
-        $("#time").text(t+"s");
+        $("#time"+elem[4]).text(t+"s");
       }
     },1000);
     setTimeout(function(){
-      clearInterval(timer)
+      clearInterval(timer);
       if(document.getElementById(elem)){
         dispatcher.trigger(elem.slice(0,4),null)
         $("#"+elem).remove();
@@ -235,7 +236,7 @@
   function taskVote(){
     $.ajax({url:"/users/limit",success:function(res){
       form_id = limit;
-      var vote = "<div id='task"+form_id+"'><h3>Do you want this task pass?</h3><br><h4 id='time'>10s</h4>";
+      var vote = "<div id='task"+form_id+"'><h3>Do you want this task pass?</h3><br><h4 id='time"+form_id+"'>10s</h4>";
       vote += "<button id='success'>Success</button><br>";
       
       if (!role){
@@ -250,7 +251,7 @@
     }});
   }
 
-  $("#display").on("change","input.box",function(e){
+  $("#host").on("change","input.box",function(e){
   	if($(this).parent().children(':checked').length==limit ){
   		$('#confirm').prop('disabled', false);
   	}
@@ -269,7 +270,7 @@
     $(this).attr("disabled","true");
   });
 
-  $("#display").on("click","#confirm",function(e){
+  $("#host").on("click","#confirm",function(e){
   	e.preventDefault();
   	var data = $(this).parent().serializeArray();
   	console.log(data);

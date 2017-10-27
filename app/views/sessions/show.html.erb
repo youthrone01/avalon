@@ -1,0 +1,108 @@
+<div class="content col-sm-8">
+    <div class="page-header">
+        <h1>Avalon</h1>
+    </div>
+    <div class="video">
+        <iframe width="190%" height="310px" src="https://www.youtube.com/embed/CmkfYKXdIpo" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div class="jumbotron">
+        <p>The Resistance: Avalon pits the forces of Good and Evil in a battle to control the future of civilization. Arthur represents the future of Britain, a promise of prosperity and honor, yet hidden among his brave warriors are Mordred's unscrupulous minions. These forces of evil are few in number but have knowledge of each other and remain hidden from all but one of Arthur's servants. Merlin alone knows the agents of evil, but he must speak of this only in riddles. If his true identity is discovered, all will be lost.</p>
+        <%=image_tag("Gameflow.png")%>
+    </div>
+    <div class=".roles">
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/LoyalServantOfArthur_0.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/LoyalServantOfArthur_1.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/LoyalServantOfArthur_2.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/LoyalServantOfArthur_3.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/LoyalServantOfArthur_4.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Merlin.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Percival.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Assassin.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/MinionOfMordred_1.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/MinionOfMordred_2.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Mordred.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Morgana.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div id="bottom1" class="view overlay hm-yellow-light">
+                <img src="http://masteryeti.no-ip.biz/resistance/gui/images/Oberon.png" alt="" class="picture img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-sm-4 card">
+    <h1>Log In</h1>
+    <form action="/sessions" method="post">
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+        <label>Email:</label>
+        <input class="form-control" type="text" name="email"><br>
+        <label>Password:</label>
+        <input class="form-control" type="password" name="password"><br>
+        <input class="btn btn-primary pull-right" type="submit" value="LogIn">
+    </form>
+    <h1>Register</h1>
+    <form action="/users" method="post">
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+        <label>Name:</label>
+        <input class="form-control" type="text" name="user[name]"><br>
+        <label>Email:</label>
+        <input class="form-control" type="text" name="user[email]"><br>
+        <label>Password:</label>
+        <input class="form-control" type="password" name="user[password]"><br>
+        <input class="btn btn-primary pull-right" type="submit" value="Register">
+    </form>
+
+</div>
+
+
+<!--
+
+-->
