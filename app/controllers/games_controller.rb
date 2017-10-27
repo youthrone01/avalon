@@ -1,8 +1,9 @@
 class GamesController < WebsocketRails::BaseController  
   def join
     game = Game.last
-    @users = game.users.includes(:joins).select("users.*,joins.vote AS ready").references(:joins)
-    WebsocketRails[:updates].trigger(:update_player, @users)
+    # @users = game.users.includes(:joins).select("users.*,joins.vote AS ready").references(:joins)
+    @joins = game.joins.includes(:user)
+    WebsocketRails[:updates].trigger(:update_player, @joins)
   end
   
   def goodbye
@@ -35,7 +36,7 @@ class GamesController < WebsocketRails::BaseController
         join.vote = nil
         join.save
       end
-      binding.pry
+      # binding.pry
       hoster = Random.rand(1..6)
       game.hosts.create(hoster:hoster,vote:"",players:"")
       @user = game.users[hoster-1]
@@ -43,22 +44,23 @@ class GamesController < WebsocketRails::BaseController
       WebsocketRails[:updates].trigger(:start, @user)
     end
     # binding.pry
-    @user = User.find_by_id(session[:user_id])
-    puts @user
-    WebsocketRails[:updates].trigger(:ready, @user)
+    # @user = User.find_by_id(session[:user_id])
+    # puts @user
+    @joins = game.joins.includes(:user)
+    WebsocketRails[:updates].trigger(:update_player, @joins)
   end
 
   def pick_players
     game = Game.last
     host = game.hosts.last
     # user_ids = data.collect{|d| d["value"]}
-    binding.pry
+    # binding.pry
     data.each do |d|
       host.players += d['value']+","
     end
     host.save
     puts host.players
-    @usernames = data.collect{|d| game.users[d["value"].to_i-1].name }
+    @usernames = data.collect{|d| game.joins[d["value"].to_i-1].user.name }
     # puts usernames
     WebsocketRails[:updates].trigger(:players,@usernames)
   end
@@ -97,7 +99,7 @@ class GamesController < WebsocketRails::BaseController
       end
       puts host.vote
       
-      if host.hoster <=1
+      if host.hoster <= 5
         hoster = host.hoster+1
       else
         hoster = 1
