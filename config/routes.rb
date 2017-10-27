@@ -7,8 +7,9 @@ Rails.application.routes.draw do
   root to: 'sessions#index'
   get "home" => 'application#show'
   get 'users/join' => 'users#join'
-  get 'users/role' => 'users#role'
+  get 'users/init' => 'users#start'
   get 'users/seat' => 'users#seat'
+  get 'users/seats' => 'users#seats'
   get 'users/host' => 'users#host'
   get 'users/limit' => 'users#limit'
   # The priority is based upon order of creation: first created -> highest priority.

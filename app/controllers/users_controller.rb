@@ -15,18 +15,19 @@ class UsersController < ApplicationController
     @user = User.find(session[:user_id])
     if game.joins.size < 6 and !game.users.include?(@user)
     	game.joins.create(user_id:session[:user_id])
-    	session[:seat] = game.joins.index(@user.joins.last)+1
   		return render json: true
     end
   	render json:false
   end
 
-  def role
+  def start
   	game = Game.last
   	join = game.joins.find_by(user_id:session[:user_id])
   	if join
-		@res = join.role
-		session[:role] = @res
+  		@res = {}
+		@res[:role] = join.role
+		@res[:seat] = join.seat
+		session[:role] = @res[:role]
 	  	return render json:@res
 	end
 	render json:nil
@@ -34,6 +35,10 @@ class UsersController < ApplicationController
 
   def seat
   	render json:session[:seat]
+  end
+
+  def seats
+  	@joins = Game.last.joins.joins(:user).select("user.name AS name,joins.*").order("joins.seat")
   end
 
   def host
