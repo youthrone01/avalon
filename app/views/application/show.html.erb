@@ -65,34 +65,25 @@
   	else{
 	  	$('#display').text( user.name+" is the first hoster")
   	}
-  	$.ajax({url:"/users/role",
+  	$.ajax({url:"/users/init",
   			success:function(res){
   				console.log(res);
-          role = res;
-          if(res){
+          role = res[role];
+          if(res[role]){
             $('#tasks').prepend("<h2 style='color:blue'>you are blue.</h2>");
           }
           else{
             $('#tasks').prepend("<h2 style='color:red'>you are red.</h2>");
           }
-
   			}
   	});
+    $.ajax({url:"/users/seats",success:function(joins){
+      update_player(joins);
+    }})
+
   });
 
-  channel.bind('update_player',function(joins){
-    var output = ""
-    for(var i=0;i<joins.length;i++){
-      console.log(joins[i].vote)
-      if(joins[i].vote){
-        output += "<p id='"+joins[i].user_id+"' style='color:red'>"+joins[i].name+"</p>";
-      }
-      else{
-        output += "<p id='"+joins[i].user_id+"'>"+joins[i].name+"</p>";
-      }
-    }
-    $("#players").html(output);
-  })
+  channel.bind('update_player',function(joins){update_player(joins)})
 
   channel.bind('player_leave',function(user){
     $("#"+user.id).remove()
@@ -190,6 +181,20 @@
         $("#display").html("<h2>"+user.name+" is host, please wait.</h2>");
       }
     }})
+  }
+
+  function update_player(joins){
+    var output = ""
+    for(var i=0;i<joins.length;i++){
+      console.log(joins[i].vote)
+      if(joins[i].vote){
+        output += "<p id='"+joins[i].user_id+"' style='color:red'>"+joins[i].name+"</p>";
+      }
+      else{
+        output += "<p id='"+joins[i].user_id+"'>"+joins[i].name+"</p>";
+      }
+    }
+    $("#players").html(output);
   }
 
   function hostForm(m){

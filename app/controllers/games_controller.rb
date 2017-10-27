@@ -28,10 +28,13 @@ class GamesController < WebsocketRails::BaseController
       game.update(status:"on")
       puts "we all ready!"
       roles = [0,1,1,1,1,0]
+      seats = [1,2,3,4,5,6]
+      seats.shuffle!
       roles = roles.shuffle
       joins = game.joins
       joins.each do |join|
         join.role = roles.pop()
+        join.seat = seats.pop()
         join.vote = nil
         join.save
       end
@@ -42,7 +45,7 @@ class GamesController < WebsocketRails::BaseController
       puts @user
       WebsocketRails[:updates].trigger(:start, @user)
     end
-    @joins = game.joins.joins(:user).select("users.name as name,joins.*").order("joins.id")
+    @joins = game.joins.joins(:user).select("users.name as name,joins.*").order("joins.seats")
     WebsocketRails[:updates].trigger(:update_player, @joins)
   end
 
@@ -56,7 +59,7 @@ class GamesController < WebsocketRails::BaseController
     end
     host.save
     puts host.players
-    @usernames = data.collect{|d| game.joins[d["value"].to_i-1].user.name }
+    @usernames = data.collect{|d| game.joins[d["value"].to_i].user.name }
     # puts usernames
     WebsocketRails[:updates].trigger(:players,@usernames)
   end
