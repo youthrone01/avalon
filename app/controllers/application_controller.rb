@@ -15,8 +15,15 @@ class ApplicationController < ActionController::Base
   	if session[:role] == nil
   		session[:role] = 1
   	end
+  	@tasks = @game.tasks.collect do |task|
+  		if task.result.include?("0")
+  			"Fail"
+  		else
+  			"Success"
+  		end
+  	end
   end
-  
+
   def current_user
     User.find(session[:user_id]) if session[:user_id]
   end

@@ -2,7 +2,11 @@
 <p>Find me in app/views/games/show.html.erb</p>
 <a href="/">Quit</a>
 <p>########################################</p>
-<div id="tasks"><p>Tasks: </p></div>
+<div id="tasks"><p>Tasks:
+<%@tasks.each do |task|%>
+  <%=task%>
+<%end%>
+ </p></div>
 <div id="vote_res"></div>
 <div id="display"></div>
 <p>########################################</p>
