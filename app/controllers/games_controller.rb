@@ -24,6 +24,7 @@ class GamesController < WebsocketRails::BaseController
     join.save
     game = join.game
     if game.joins.where(vote:true).count == 6
+      
       game.update(status:"on")
       puts "we all ready!"
       roles = [0,1,1,1,1,0]
@@ -34,9 +35,10 @@ class GamesController < WebsocketRails::BaseController
         join.vote = nil
         join.save
       end
+      binding.pry
       hoster = Random.rand(1..6)
       game.hosts.create(hoster:hoster,vote:"",players:"")
-      @user = game.users.find(hoster)
+      @user = game.users[hoster-1]
       puts @user
       WebsocketRails[:updates].trigger(:start, @user)
     end

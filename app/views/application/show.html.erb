@@ -24,7 +24,7 @@
   
 
 <script type="text/javascript">
-  var dispatcher = new WebSocketRails('localhost:3000/websocket');
+  var dispatcher = new WebSocketRails('192.168.0.237:3000/websocket');
   var limit = 2;
   var role = <%=session[:role]%>;
   var timer;
@@ -54,10 +54,10 @@
   				console.log(res);
           role = res;
           if(res){
-            $('#tasks').prepend("<p color='blue'>you are blue.</p>");
+            $('#tasks').prepend("<h2 style='color:blue'>you are blue.</h2>");
           }
           else{
-            $('#tasks').prepend("<p color='red'>you are red.</p>");
+            $('#tasks').prepend("<h2 style='color:red'>you are red.</h2>");
           }
 
   			}
